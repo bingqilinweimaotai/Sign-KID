@@ -3,13 +3,13 @@ data:
     trg: "skels"    # Target - 3D body co-ordinates (skels)
     files: "files"    # Filenames for each sequence
 
-    train: "C:/Users/43962/Desktop/Sign-KID/Data/P2014T_Ben/train"
-    dev: "C:/Users/43962/Desktop/Sign-KID/Data/P2014T_Ben/dev"
-    test: "C:/Users/43962/Desktop/Sign-KID/Data/P2014T_Ben/test"
+    train: "C:/Users/YCY/Desktop/Sign-KID/Data/p14t_Ben/train"
+    dev: "C:/Users/YCY/Desktop/Sign-KID/Data/p14t_Ben/dev"
+    test: "C:/Users/YCY/Desktop/Sign-KID/Data/p14t_Ben/test"
 
     max_sent_length: 300 # Max Sentence Length
     skip_frames: 1   # Skip frames in the data, to reduce the data input size
-    src_vocab: "C:/Users/43962/Desktop/Sign-KID/Configs/src_vocab.txt"
+    src_vocab: "C:/Users/YCY/Desktop/Sign-KID/Configs/src_vocab.txt"
 
 training:
     random_seed: 27   # Random seed for initialisation
@@ -27,7 +27,7 @@ training:
     validation_freq: 10 # After how many steps to run a validation on the model
     logging_freq: 250  # After how many steps to log training progress
     eval_metric: "dtw"  # Evaluation metric during training (dtw','bt')
-    model_dir: "C:/Users/43962/Desktop/Sign-KID/Models/Base" # Where the model shall be stored
+    model_dir: "C:/Users/YCY/Desktop/Sign-KID/Models/Base" # Where the model shall be stored
     overwrite: False # Flag to overwrite a previous saved model in the model_dir
     continue: True  # Flag to continue from a previous saved model in the model_dir
     shuffle: True  # Flag to shuffle the data during training
