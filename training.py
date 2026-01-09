@@ -579,7 +579,7 @@ def train(cfg_file: str, ckpt=None) -> None:
     train_data, dev_data, test_data, src_vocab, trg_vocab = load_data(cfg=cfg)
 
     # Build the Progressive Transformer model
-    model = build_model(cfg, src_vocab=src_vocab, trg_vocab=trg_vocab, sampling_timesteps=5)
+    model = build_model(cfg, src_vocab=src_vocab, trg_vocab=trg_vocab)
 
     if ckpt is not None:
         use_cuda = cfg["training"].get("use_cuda", True)

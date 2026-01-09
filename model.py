@@ -239,71 +239,70 @@ class Model(nn.Module):
 
 def build_model(cfg: dict = None,
                 src_vocab: Vocabulary = None,
-                trg_vocab: Vocabulary = None,
-                sampling_timesteps: int = 5) -> Model:
+                trg_vocab: Vocabulary = None) -> Model:
     """
     Build and initialize the model according to the configuration.
-
-    :param cfg: dictionary configuration containing model specifications
-    :param src_vocab: source vocabulary
-    :param trg_vocab: target vocabulary
-    :return: built and initialized model
     """
 
     full_cfg = cfg
     cfg = cfg["model"]
 
+    # 【新增代码：从配置文件读取 diffusion 参数】
+    diff_cfg = cfg.get("diffusion", {})
+    sampling_timesteps = diff_cfg.get("sampling_timesteps", 50)  # 默认为50
+
     src_padding_idx = src_vocab.stoi[PAD_TOKEN]
     trg_padding_idx = 0
 
-    # Input target size is the joint vector length plus one for counter
+    # Input / Output target size
     in_trg_size = cfg["trg_size"] + 1
-    # Output target size is the joint vector length plus one for counter
     out_trg_size = cfg["trg_size"] + 1
 
-    just_count_in = cfg.get("just_count_in", False)
-    future_prediction = cfg.get("future_prediction", 0)
-
-    #  Just count in limits the in target size to 1
-    if just_count_in:
+    if cfg.get("just_count_in", False):
         in_trg_size = 1
 
-    # Future Prediction increases the output target size
+    future_prediction = cfg.get("future_prediction", 0)
     if future_prediction != 0:
-        # Times the trg_size (minus counter) by amount of predicted frames, and then add back counter
-        out_trg_size = (out_trg_size - 1 ) * future_prediction + 1
+        out_trg_size = (out_trg_size - 1) * future_prediction + 1
 
-    # Define source embedding
+    # ===== Source embedding =====
     src_embed = Embeddings(
-        **cfg["encoder"]["embeddings"], vocab_size=len(src_vocab),
-        padding_idx=src_padding_idx)
+        **cfg["encoder"]["embeddings"],
+        vocab_size=len(src_vocab),
+        padding_idx=src_padding_idx
+    )
 
-    ## Encoder -------
-    enc_dropout = cfg["encoder"].get("dropout", 0.) # Dropout
+    # ===== Encoder =====
+    enc_dropout = cfg["encoder"].get("dropout", 0.)
     enc_emb_dropout = cfg["encoder"]["embeddings"].get("dropout", enc_dropout)
-    assert cfg["encoder"]["embeddings"]["embedding_dim"] == \
-           cfg["encoder"]["hidden_size"], \
-           "for transformer, emb_size must be hidden_size"
 
-    # Transformer Encoder
-    encoder = TransformerEncoder(**cfg["encoder"],
-                                 emb_size=src_embed.embedding_dim,
-                                 emb_dropout=enc_emb_dropout)
+    assert cfg["encoder"]["embeddings"]["embedding_dim"] == cfg["encoder"]["hidden_size"], \
+        "For transformer, embedding_dim must equal hidden_size"
 
-    ## Diffusion -------
-    diffusion = Diffusion(args=cfg, sampling_timesteps=sampling_timesteps,trg_vocab=trg_vocab)
+    encoder = TransformerEncoder(
+        **cfg["encoder"],
+        emb_size=src_embed.embedding_dim,
+        emb_dropout=enc_emb_dropout
+    )
 
-    # Define the model
-    model = Model(encoder=encoder,
-                  diffusion=diffusion,
-                  src_embed=src_embed,
-                  src_vocab=src_vocab,
-                  trg_vocab=trg_vocab,
-                  cfg=full_cfg,
-                  in_trg_size=in_trg_size,
-                  out_trg_size=out_trg_size)
+    # ===== Diffusion =====
+    diffusion = Diffusion(
+        args=cfg,
+        sampling_timesteps=sampling_timesteps,
+        trg_vocab=trg_vocab
+    )
 
-    # Custom initialization of model parameters
+    # ===== Model =====
+    model = Model(
+        encoder=encoder,
+        diffusion=diffusion,
+        src_embed=src_embed,
+        src_vocab=src_vocab,
+        trg_vocab=trg_vocab,
+        cfg=full_cfg,
+        in_trg_size=in_trg_size,
+        out_trg_size=out_trg_size
+    )
+
     initialize_model(model, cfg, src_padding_idx, trg_padding_idx)
-
     return model
